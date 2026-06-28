@@ -1,0 +1,741 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Agenda app API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: events
+    description: Calendar events
+  - name: categories
+    description: Event categories
+  - name: notifications
+    description: WhatsApp notification management
+  - name: storage
+    description: File storage operations
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List all events
+      parameters:
+        - name: categoryId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: importance
+          in: query
+          schema:
+            type: ["string", "null"]
+            enum: [low, medium, high, critical, null]
+        - name: from
+          in: query
+          schema:
+            type: ["string", "null"]
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: ["string", "null"]
+            format: date-time
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create a new event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Created event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+
+  /events/today:
+    get:
+      operationId: getTodayEvents
+      tags: [events]
+      summary: Get today's events
+      responses:
+        "200":
+          description: Today's events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+
+  /events/upcoming:
+    get:
+      operationId: getUpcomingEvents
+      tags: [events]
+      summary: Get upcoming events (next 7 days)
+      responses:
+        "200":
+          description: Upcoming events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+
+  /events/summary:
+    get:
+      operationId: getEventsSummary
+      tags: [events]
+      summary: Dashboard summary counts
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventsSummary"
+
+  /events/{id}:
+    get:
+      operationId: getEvent
+      tags: [events]
+      summary: Get a single event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Event found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    patch:
+      operationId: updateEvent
+      tags: [events]
+      summary: Update an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpdate"
+      responses:
+        "200":
+          description: Updated event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create a category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /categories/{id}:
+    patch:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdate"
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete a category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [storage]
+      summary: Request a presigned upload URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+
+  /storage/objects/{objectPath}:
+    get:
+      operationId: getStorageObject
+      tags: [storage]
+      summary: Serve a stored object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object contents
+
+  /events/{id}/attachments:
+    get:
+      operationId: listEventAttachments
+      tags: [events]
+      summary: List attachments for an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of attachments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventAttachment"
+    post:
+      operationId: createEventAttachment
+      tags: [events]
+      summary: Save attachment metadata for an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventAttachmentInput"
+      responses:
+        "201":
+          description: Created attachment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventAttachment"
+
+  /events/{id}/attachments/{attachmentId}:
+    delete:
+      operationId: deleteEventAttachment
+      tags: [events]
+      summary: Delete an attachment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: attachmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /notifications/settings:
+    get:
+      operationId: getNotificationSettings
+      tags: [notifications]
+      summary: Get WhatsApp notification settings
+      responses:
+        "200":
+          description: Notification settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
+    patch:
+      operationId: updateNotificationSettings
+      tags: [notifications]
+      summary: Update WhatsApp notification settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationSettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSettings"
+
+  /notifications/test:
+    post:
+      operationId: sendTestNotification
+      tags: [notifications]
+      summary: Send a test WhatsApp message
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationResult"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: ["string", "null"]
+          format: date-time
+        allDay:
+          type: boolean
+        importance:
+          type: string
+          enum: [low, medium, high, critical]
+        categoryId:
+          type: ["integer", "null"]
+        categoryName:
+          type: ["string", "null"]
+        categoryColor:
+          type: ["string", "null"]
+        whatsappNotify:
+          type: boolean
+        notifyPhone:
+          type: ["string", "null"]
+        notifyAdvanceMinutes:
+          type: ["integer", "null"]
+        notificationSent:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - startAt
+        - allDay
+        - importance
+        - whatsappNotify
+        - notificationSent
+        - createdAt
+
+    EventInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: ["string", "null"]
+          format: date-time
+        allDay:
+          type: boolean
+        importance:
+          type: string
+          enum: [low, medium, high, critical]
+        categoryId:
+          type: ["integer", "null"]
+        whatsappNotify:
+          type: boolean
+        notifyPhone:
+          type: ["string", "null"]
+        notifyAdvanceMinutes:
+          type: ["integer", "null"]
+      required:
+        - title
+        - startAt
+        - importance
+
+    EventUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: ["string", "null"]
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: ["string", "null"]
+          format: date-time
+        allDay:
+          type: boolean
+        importance:
+          type: string
+          enum: [low, medium, high, critical]
+        categoryId:
+          type: ["integer", "null"]
+        whatsappNotify:
+          type: boolean
+        notifyPhone:
+          type: ["string", "null"]
+        notifyAdvanceMinutes:
+          type: ["integer", "null"]
+        notificationSent:
+          type: boolean
+
+    EventsSummary:
+      type: object
+      properties:
+        total:
+          type: integer
+        today:
+          type: integer
+        thisWeek:
+          type: integer
+        byImportance:
+          type: object
+          properties:
+            low:
+              type: integer
+            medium:
+              type: integer
+            high:
+              type: integer
+            critical:
+              type: integer
+          required: [low, medium, high, critical]
+        withNotification:
+          type: integer
+      required:
+        - total
+        - today
+        - thisWeek
+        - byImportance
+        - withNotification
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+        eventCount:
+          type: integer
+      required:
+        - id
+        - name
+        - color
+        - eventCount
+
+    CategoryInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        color:
+          type: string
+          minLength: 1
+      required:
+        - name
+        - color
+
+    CategoryUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        color:
+          type: string
+          minLength: 1
+
+    NotificationSettings:
+      type: object
+      properties:
+        id:
+          type: integer
+        defaultPhone:
+          type: ["string", "null"]
+        twilioAccountSid:
+          type: ["string", "null"]
+        twilioAuthToken:
+          type: ["string", "null"]
+        twilioWhatsappFrom:
+          type: ["string", "null"]
+        callmebotApiKey:
+          type: ["string", "null"]
+        callmebotPhone:
+          type: ["string", "null"]
+        isConfigured:
+          type: boolean
+        twilioConfigured:
+          type: boolean
+        callmebotConfigured:
+          type: boolean
+      required:
+        - id
+        - isConfigured
+        - twilioConfigured
+        - callmebotConfigured
+
+    NotificationSettingsUpdate:
+      type: object
+      properties:
+        defaultPhone:
+          type: ["string", "null"]
+        twilioAccountSid:
+          type: ["string", "null"]
+        twilioAuthToken:
+          type: ["string", "null"]
+        twilioWhatsappFrom:
+          type: ["string", "null"]
+        callmebotApiKey:
+          type: ["string", "null"]
+        callmebotPhone:
+          type: ["string", "null"]
+
+    UploadUrlRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        size:
+          type: integer
+        contentType:
+          type: string
+      required:
+        - name
+        - size
+        - contentType
+
+    UploadUrlResponse:
+      type: object
+      properties:
+        uploadURL:
+          type: string
+        objectPath:
+          type: string
+      required:
+        - uploadURL
+        - objectPath
+
+    EventAttachment:
+      type: object
+      properties:
+        id:
+          type: integer
+        eventId:
+          type: integer
+        filename:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+        objectPath:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - eventId
+        - filename
+        - mimeType
+        - size
+        - objectPath
+        - createdAt
+
+    EventAttachmentInput:
+      type: object
+      properties:
+        filename:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+        objectPath:
+          type: string
+      required:
+        - filename
+        - mimeType
+        - size
+        - objectPath
+
+    NotificationResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message

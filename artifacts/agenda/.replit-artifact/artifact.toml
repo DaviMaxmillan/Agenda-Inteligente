@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Agenda"
+version = "1.0.0"
+id = "artifacts/agenda"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24283
+
+[services.development]
+run = "pnpm --filter @workspace/agenda run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/agenda", "run", "build" ]
+publicDir = "artifacts/agenda/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24283"
+BASE_PATH = "/"

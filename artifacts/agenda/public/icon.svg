@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#7C3519"/>
+  <!-- Calendar body -->
+  <rect x="96" y="144" width="320" height="280" rx="24" fill="white"/>
+  <!-- Calendar header -->
+  <rect x="96" y="144" width="320" height="88" rx="24" fill="#A0522D"/>
+  <rect x="96" y="192" width="320" height="40" fill="#A0522D"/>
+  <!-- Ring left -->
+  <rect x="168" y="104" width="28" height="72" rx="14" fill="#5C2010"/>
+  <!-- Ring right -->
+  <rect x="316" y="104" width="28" height="72" rx="14" fill="#5C2010"/>
+  <!-- Calendar title lines -->
+  <rect x="176" y="166" width="160" height="14" rx="7" fill="rgba(255,255,255,0.5)"/>
+  <!-- Grid dots -->
+  <rect x="136" y="264" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+  <rect x="192" y="264" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+  <rect x="248" y="264" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+  <rect x="304" y="264" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+  <rect x="344" y="264" width="32" height="28" rx="8" fill="#E53935" opacity="0.85"/>
+  
+  <rect x="136" y="308" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+  <rect x="192" y="308" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+  <rect x="248" y="308" width="32" height="28" rx="8" fill="#A0522D" opacity="0.15"/>
+  <rect x="304" y="308" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+  <rect x="344" y="308" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+
+  <rect x="136" y="352" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+  <rect x="192" y="352" width="32" height="28" rx="8" fill="#A0522D" opacity="0.3"/>
+  <rect x="248" y="352" width="80" height="28" rx="8" fill="#A0522D" opacity="0.5"/>
+</svg>
