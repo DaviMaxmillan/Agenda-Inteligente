@@ -15,6 +15,7 @@ import {
   GetUpcomingEventsResponse,
   GetEventsSummaryResponse,
 } from "@workspace/api-zod";
+import { pushEventToGoogle, deleteEventFromGoogle, getStoredTokens } from "../lib/googleCalendar";
 
 const router: IRouter = Router();
 
@@ -183,6 +184,13 @@ router.post("/events", async (req, res): Promise<void> => {
     .leftJoin(categoriesTable, eq(eventsTable.categoryId, categoriesTable.id))
     .where(eq(eventsTable.id, inserted.id));
 
+  // Sync to Google Calendar (fire-and-forget — não bloqueia a resposta)
+  getStoredTokens()
+    .then((stored) => {
+      if (stored) pushEventToGoogle(inserted.id).catch(() => {});
+    })
+    .catch(() => {});
+
   res.status(201).json(GetEventResponse.parse(event));
 });
 
@@ -221,6 +229,13 @@ router.patch("/events/:id", async (req, res): Promise<void> => {
     .leftJoin(categoriesTable, eq(eventsTable.categoryId, categoriesTable.id))
     .where(eq(eventsTable.id, updated.id));
 
+  // Sync to Google Calendar (fire-and-forget — não bloqueia a resposta)
+  getStoredTokens()
+    .then((stored) => {
+      if (stored) pushEventToGoogle(updated.id).catch(() => {});
+    })
+    .catch(() => {});
+
   res.json(UpdateEventResponse.parse(event));
 });
 
@@ -236,6 +251,11 @@ router.delete("/events/:id", async (req, res): Promise<void> => {
   if (!deleted) {
     res.status(404).json({ error: "Event not found" });
     return;
+  }
+
+  // Remove do Google Calendar (fire-and-forget — não bloqueia a resposta)
+  if (deleted.googleEventId) {
+    deleteEventFromGoogle(deleted.googleEventId).catch(() => {});
   }
 
   res.sendStatus(204);

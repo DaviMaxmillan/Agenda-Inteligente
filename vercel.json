@@ -1,4 +1,6 @@
 {
+  "buildCommand": "pnpm install --frozen-lockfile && pnpm --filter @workspace/agenda run build",
+  "outputDirectory": "artifacts/agenda/dist/public",
   "rewrites": [
     {
       "source": "/api/:path*",
